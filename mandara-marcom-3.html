@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcom Manager Buy-in: CRM改革を「自分ごと」に</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, Osaka, 'MS PGothic', arial, helvetica, sans-serif;
+            scroll-behavior: smooth;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 280px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 320px;
+            }
+        }
+        .section-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            scroll-margin-top: 80px; /* For sticky nav */
+        }
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .sticky-nav a {
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .sticky-nav a.active {
+            background-color: #118AB2;
+            color: white;
+            border-radius: 0.375rem;
+        }
+        .hover-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .hover-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        #scrollToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            font-size: 18px;
+            border: none;
+            outline: none;
+            background-color: #06D6A0;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+        #scrollToTopBtn:hover {
+            background-color: #05B38B;
+        }
+        .problem-solution-box {
+            border: 2px solid #FF6B6B;
+            background-color: #FEF2F2;
+            color: #073B4C;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .problem-solution-box.solution {
+            border-color: #06D6A0;
+            background-color: #F0FDF4;
+        }
+        .problem-solution-box::before {
+            content: '課題';
+            position: absolute;
+            top: -0.75rem;
+            left: 1rem;
+            background-color: #FF6B6B;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .problem-solution-box.solution::before {
+            content: '解決策';
+            background-color: #06D6A0;
+        }
+        .case-study-card {
+            background-color: #E0F2FE; /* Light blue */
+            border: 1px solid #118AB2;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .case-study-card:hover {
+            background-color: #CCEEFF;
+            transform: translateY(-2px);
+        }
+        .case-study-detail {
+            background-color: #F0FDF4; /* Light green */
+            border: 1px solid #06D6A0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none; /* Hidden by default */
+        }
+        .case-study-detail.active {
+            display: block;
+        }
+        .relationship-box {
+            background-color: #F0FDF4;
+            border: 2px solid #06D6A0;
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: bold;
+            color: #073B4C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+        .relationship-arrow {
+            font-size: 2rem;
+            color: #118AB2;
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+        .relationship-label {
+            font-size: 0.8rem;
+            color: #073B4C;
+            margin-top: -0.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .action-list li {
+            background-color: #F8F8F8;
+            border-left: 4px solid #118AB2;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease-in-out;
+        }
+        .action-list li:hover {
+            background-color: #E0F2FE;
+        }
+        .action-list li strong {
+            color: #073B4C;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-[#073B4C]">
+    <!-- Infographic Narrative Plan:
+        1. Hero: Title, Marcom Managerの重要性。
+        2. Navigation: Sticky nav for sections.
+        3. Section 1: はじめに (現状認識と課題)。
+        4. Section 2: 事前コミュニケーション (意識改革のための土壌づくり)。
+        5. Section 3: 6月戦略会議 (共創と未来への一歩)。
+        6. Section 4: 継続的な支援と未来の展望 (具体的な支援、経営層の期待)。
+        7. Footer: Concluding remark.
+    -->
+    <!-- Visualization Choices & Justification (NO SVG, NO MERMAID JS CONFIRMED):
+        - KPI向上棒グラフ (Chart.js Canvas): Goal: Compare. Show improvement in Web/PR/SNS metrics.
+        - データ統合ドーナツグラフ (Chart.js Canvas): Goal: Inform/Compare composition. Show PoC data vs future CDP data.
+        - CRMとMarcomの関係性図 (HTML/CSS): Goal: Organize/Relationships. Visualize data flow and mutual benefit using metaphor.
+        - 課題解決カード (HTML/CSS): Goal: Inform. Problem-solution pairing.
+        - 工数削減棒グラフ (Chart.js Canvas): Goal: Compare. Show time saving.
+        - リーダーシップ機会カード (HTML/CSS): Goal: Inform. Highlight roles.
+        - 成功体験ビッグナンバー (HTML/CSS): Goal: Inform. Show tangible results.
+        - 支援リスト (HTML/CSS): Goal: Inform. List concrete support.
+        - 壁打ちイメージ (HTML/CSS): Goal: Inform. Visualize collaboration.
+        - 経営層メッセージ (HTML/CSS): Goal: Inform. Convey top-down importance.
+        - 事例カード (HTML/CSS with JS toggle): Goal: Inform/Illustrate. Provide concrete examples.
+        - アクションリスト (HTML/CSS): Goal: Organize/Inform. List specific actions.
+    -->
+
+    <header class="bg-[#118AB2] text-white py-10 px-4 text-center shadow-xl rounded-b-2xl">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Marcom Manager Buy-in: CRM改革を「自分ごと」に</h1>
+        <p class="text-lg md:text-xl mb-4">顧客軸改革推進のためのMarcom Managerとの共創</p>
+        <div class="inline-block bg-[#FFD166] text-[#073B4C] px-6 py-3 rounded-lg shadow-md">
+            <span class="text-sm">CRMマネージャーの役割</span>
+            <p class="text-2xl font-bold">組織横断的な顧客軸改革の推進</p>
+        </div>
+    </header>
+
+    <nav class="sticky-nav shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-center space-x-2 md:space-x-4 overflow-x-auto">
+            <a href="#intro-problem" class="nav-link text-[#118AB2] hover:text-[#06D6A0] font-semibold px-3 py-2 rounded-md text-sm md:text-base whitespace-nowrap">現状と課題</a>
+            <a href="#pre-meeting" class="nav-link text-[#118AB2] hover:text-[#06D6A0] font-semibold px-3 py-2 rounded-md text-sm md:text-base whitespace-nowrap">事前コミュニケーション</a>
+            <a href="#meeting" class="nav-link text-[#118AB2] hover:text-[#06D6A0] font-semibold px-3 py-2 rounded-md text-sm md:text-base whitespace-nowrap">6月戦略会議</a>
+            <a href="#support-future" class="nav-link text-[#118AB2] hover:text-[#06D6A0] font-semibold px-3 py-2 rounded-md text-sm md:text-base whitespace-nowrap">支援と未来</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="intro-problem" class="section-card text-center">
+            <h2 class="text-2xl font-bold text-[#118AB2] mb-4">Marcom Managerの「Buy-in」が不可欠な理由</h2>
+            <p class="text-gray-700 mb-4">Marcom Managerは顧客との直接的なコミュニケーションを担い、顧客体験を形成する重要な役割です。彼らがCRM改革に深くコミットすることで、プロジェクトの成功は大きく加速します。</p>
+            <p class="text-gray-700">しかし、現状では「商品軸」と「顧客軸」の分断が生じています。PoCで得られるデータも限定的であり、Marcomが「自分ごと」としてコミットするには、具体的なアプローチが必要です。</p>
+            <p class="text-sm text-gray-600 mt-4">**現在の状況:** LINEスタンプカードPoC導入済み。OTA・レストラン顧客データは限定的だが取得開始。宿泊データは自社予約のみ連動。**Marcomは商品軸（ブランドWeb、PR、SNS）を担当し、顧客軸のキャンペーンはCRMチームが担当しているため、分断が生じています。**</p>
+        </section>
+
+        <section id="pre-meeting" class="section-card">
+            <h2 class="text-2xl font-bold text-[#118AB2] mb-4 text-center">事前コミュニケーション（6月戦略会議まで）：意識改革のための土壌づくり</h2>
+            <p class="mb-6 text-center text-gray-700">会議でいきなり本題に入るのではなく、Marcom Managerの**好奇心と専門性を刺激する**ための「種まき」を徹底しましょう。</p>
+
+            <h3 class="text-xl font-semibold text-[#06D6A0] mb-3">具体的なアクション（10個以上）</h3>
+            <ul class="action-list text-gray-700">
+                <li><strong>1. 個別セッションの「問いかけ」を深化させる:</strong> PoCデータ（匿名化）を提示し、「このデータから、なぜ顧客はこう行動したと思いますか？」とMarcom Managerの感性を刺激する質問を投げかける。</li>
+                <li><strong>2. 「感性」を「データ」で補強する感覚の提示:</strong> 「Marcomさんの感性で築いたブランドイメージが、行動データでさらに確信に変わる可能性」について対話する。</li>
+                <li><strong>3. PoCデータの「粒度」を一緒に体感するワーク:</strong> 実際のPoCデータ（「いつ、誰が、どこで、どのチャネルで」）を使い、「この情報から何が言えるか？」を一緒に推測するミニ顧客プロファイリング・ゲームを行う。</li>
+                <li><strong>4. 「点」でしかなくても「繋がると線になる」感覚の共有:</strong> 「今は点でも、将来CDPで線になる」という未来像を具体的に語り、PoCがその最初の「点」であることを強調する。</li>
+                <li><strong>5. 既存コンテンツとの連携シミュレーション依頼:</strong> 「もし〇〇なデータがあれば、Webサイトの〇〇コンテンツのトーンを変えられますか？」と具体例を挙げて考える機会を与える。</li>
+                <li><strong>6. 小さな「行動データ視点」の試行提案:</strong> 「PoCデータから立てた仮説に基づき、次回のWeb更新で小さなテストコンテンツを掲載しませんか？CTRの変化を見てみましょう。」と具体的なアクションを提案。</li>
+                <li><strong>7. チャネルシフト施策への協働を依頼:</strong> 「スタンプ2倍特典の『お得』を、Marcomさんの手で『魅力的な体験』としてWebやSNSでどう伝えますか？」と、彼らのブランド発信力を活用する方向で依頼。</li>
+                <li><strong>8. PoCの「成功」をMarcomの「実績」に繋げる説明:</strong> 「チャネルシフトの成功は、Marcomさんの対外的な実績にもなります」と伝える。</li>
+                <li><strong>9. 「顧客体験の全体像」をMarcom目線で再構築するブレインストーミング:</strong> 「CRMの行動データとMarcomの感性で、ブランド体験のストーリーを再構築しませんか？」と提案。</li>
+                <li><strong>10. 他社事例の共有（Marcom業務に直結するもの）:</strong> 限定的なデータでもMarcom業務に活かせる他社事例を個別に共有し、自社への応用を促す。</li>
+                <li><strong>11. Marcomチームの「顧客軸への小さな貢献」を具体的に定義:</strong> 例えば、「PoCスタンプカード登録者のWebサイト行動分析レポート作成（CRMチームがデータ提供）」など、彼らが今できる具体的な貢献を一緒に見つける。</li>
+                <li><strong>12. 成功の「兆し」の共有:</strong> PoCで得られた小さなポジティブなデータ（例: 特定の都道府県からのOTA顧客のスタンプ登録率が高い）を、すぐにMarcomに共有し、彼らの興味を引く。</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold text-[#06D6A0] mb-3 mt-8 text-center">CRMとMarcomの関係性：顧客軸という羅針盤</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">Marcomはブランドの灯台。CRMデータは、顧客の航路を映し出す羅針盤です。この羅針盤があれば、灯台の光を最も必要な顧客に、最も効果的に届けられます。</p>
+            <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg shadow-inner max-w-md mx-auto">
+                <div class="relationship-box w-full">顧客の旅 (Customer Journey)</div>
+                <div class="relationship-arrow">▼</div>
+                <div class="relationship-box w-full">CRM (データ分析・顧客理解)</div>
+                <div class="relationship-arrow">↓</div>
+                <div class="relationship-label">顧客インサイトの「兆し」</div>
+                <div class="relationship-arrow">↓</div>
+                <div class="relationship-box w-full">Marcom (Web/PR/SNS発信)</div>
+                <div class="relationship-arrow">↓</div>
+                <div class="relationship-label">顧客の心に響くブランド価値</div>
+                <div class="relationship-arrow">▼</div>
+                <div class="relationship-box w-full">「会員利用の増大」</div>
+            </div>
+            <p class="text-sm text-gray-600 mt-4 text-center">この連携により、Marcomの活動は単なる「情報発信」から「顧客の心に響く価値創造」へと進化します。</p>
+
+            <h3 class="text-xl font-semibold text-[#06D6A0] mb-3 mt-8 text-center">他業界事例に学ぶ：PoCデータがMarcomを変革する</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">抽象的な理論ではなく、具体的な事例を通じてCRMとMarcomの深い関連性を体感しましょう。カードをクリックすると詳細が表示されます。</p>
+
+            <div class="space-y-4">
+                <div class="case-study-card" data-case-id="retail">
+                    <p class="font-bold text-[#118AB2]">小売業界：来店データ活用でWeb・SNSコンテンツを最適化</p>
+                    <p class="text-sm text-gray-700">（例：カフェチェーン）スタンプアプリの来店データで、顧客の関心に基づいた情報発信を強化</p>
+                </div>
+                <div class="case-study-detail" id="case-retail">
+                    <p class="font-semibold text-[#073B4C]">事例：カフェチェーンの来店頻度に応じたWeb・SNS施策</p>
+                    <p class="text-sm text-gray-600">**CRMインサイト (PoCレベル):** スタンプアプリの来店データから、週に複数回訪れる「ヘビーユーザー」と、月に1-2回の「ライトユーザー」を識別。どの店舗にどの時間帯に来店傾向があるか把握。</p>
+                    <p class="text-sm text-gray-600">**Marcom活用:** ヘビーユーザー向けには新メニューの先行情報や限定イベントのWeb告知・SNS投稿を強化。ライトユーザー向けには「久しぶりのご来店特典」をWebやSNSで示唆し、再来店を促進。特定店舗の閑散時間帯に合わせたSNSキャンペーンも展開。</p>
+                    <p class="text-sm text-gray-600">**結果:** 各顧客層のエンゲージメント向上、来店頻度増加、SNSでの話題性向上。</p>
+                </div>
+
+                <div class="case-study-card" data-case-id="travel">
+                    <p class="font-bold text-[#118AB2]">旅行業界：OTA宿泊データ活用でWeb・SNSでの直接予約誘導</p>
+                    <p class="text-sm text-gray-700">（例：ホテルチェーン）OTA経由の顧客にも直接予約のメリットを訴求</p>
+                </div>
+                <div class="case-study-detail" id="case-travel">
+                    <p class="font-semibold text-[#073B4C]">事例：OTA利用客へのチャネルシフト促進</p>
+                    <p class="text-sm text-gray-600">**CRMインサイト (PoCレベル):** スタンプカードでOTA経由の宿泊客の「誰がいつ泊まったか」を把握。これにより、自社サイト経由の顧客との行動の違いを分析する第一歩に。</p>
+                    <p class="text-sm text-gray-600">**Marcom活用:** OTA経由でスタンプカードを登録した顧客に対し、自社Webサイトで「次回直接予約でスタンプ2倍」のバナー広告や、SNSで「公式予約限定プラン」を強調。OTA顧客が関心を持ちそうなWebコンテンツ（例：周辺観光情報）を充実させ、エンゲージメントを深める。</p>
+                    <p class="text-sm text-gray-600">**結果:** OTA顧客の自社Webサイト訪問率向上、直接予約へのチャネルシフトの兆候。</p>
+                </div>
+
+                <div class="case-study-card" data-case-id="tech">
+                    <p class="font-bold text-[#118AB2]">テクノロジー業界：顧客の「声」をWeb・PR・SNSに反映</p>
+                    <p class="text-sm text-gray-700">（例：SaaS企業）サポートデータから課題を特定し、情報発信で解決</p>
+                </div>
+                <div class="case-study-detail" id="case-tech">
+                    <p class="font-semibold text-[#073B4C]">事例：ユーザーの誤解解消と満足度向上</p>
+                    <p class="text-sm text-gray-600">**CRMインサイト (PoCレベル):** カスタマーサポートへの問い合わせ内容の傾向（例：特定の機能に関する質問が多い）を把握。これは将来的なCDPでの詳細分析の足がかりとなる。</p>
+                    <p class="text-sm text-gray-600">**Marcom活用:** 問い合わせが多い機能について、WebサイトのFAQやヘルプ記事を改善。SNSで「今さら聞けない〇〇機能」といったQ&Aコンテンツを配信。プレスリリースで新機能の「ユーザーフレンドリーさ」を強調し、顧客の「痛み」を解消する情報発信を強化。</p>
+                    <p class="text-sm text-gray-600">**結果:** 顧客満足度向上、ネガティブなSNSコメントの減少、製品に関するポジティブな言及の増加。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="meeting" class="section-card">
+            <h2 class="text-2xl font-bold text-[#118AB2] mb-4 text-center">6月戦略会議：共創と未来への一歩を確かなものに</h2>
+            <p class="mb-6 text-center text-gray-700">会議では、「押し付け」ではなく「対話と共感」を通じて、Marcom Managerが自ら「この改革は自分たちの仕事の未来に繋がる」と感じられる場を創出します。</p>
+
+            <h3 class="text-xl font-semibold text-[#06D6A0] mb-3">具体的なアクション（10個以上）</h3>
+            <ul class="action-list text-gray-700">
+                <li><strong>1. 会議冒頭でのNoriさんの「自己開示」と「本音の共有」:</strong> 「今のPoCデータだけでは深いインサイトは難しいが、Marcomさんが本当にやりたい『顧客の心に響くブランド創造』のためにこのPoCは不可欠」と正直に伝える。</li>
+                <li><strong>2. 「顧客の旅」をテーマにした全員参加型ワーク:</strong> 顧客の「ホテルを探す」から「リピート」までの旅を全員で書き出し、各タッチポイントで「何を感じているか」を議論。</li>
+                <li><strong>3. PoCデータからの「顧客の行動の点」の提示:</strong> ワークで出た「顧客の旅」の各点に、NoriさんがPoCの「いつ、誰が、どこで、どのチャネルで」といった行動データを具体的に紐付けて示す。</li>
+                <li><strong>4. Marcom Managerからの「感性×データ」発表:</strong> 事前ワークで彼らが考えた「PoCデータからの可能性」や「既存コンテンツ連携シミュレーション」を彼ら自身に発表してもらう。</li>
+                <li><strong>5. 「商品軸 vs 顧客軸」の「分断解消」を全員で議論:</strong> 「両者が『顧客の心』という共通の場所で連携するには何ができるか？」と問いかけ、MarcomにはWeb/PR/SNSでのデータ活用方法にフォーカスして意見を求める。</li>
+                <li><strong>6. 「小さな実験」の共同企画セッション:</strong> PoCデータから得られる仮説（例：OTA顧客の特定ページ閲覧傾向）を元に、Marcom主導で今すぐできるWeb/SNSのA/Bテストやターゲティングテストのアイデアをブレインストーミングし、選定。</li>
+                <li><strong>7. CRMチームからの「データ提供・効果測定」全面協力の約束:</strong> 選定された「小さな実験」に対し、CRMチームがデータ提供と効果測定で全面的にサポートすることを明確に伝える。</li>
+                <li><strong>8. 「顧客軸」の未来の姿をMarcomと共に描く:</strong> 「CDP完成後、MarcomがWebサイトで一人ひとりに最適化されたブランドストーリーを語る未来」を具体的に描写し、PoCがその第一歩であることを強調。</li>
+                <li><strong>9. 「ブランドイメージの検証」への第一歩の提案:</strong> 「将来的にCDPでブランドイメージを定量検証できるよう、今から『検証したいブランドに関する顧客の行動データ』の仮説を一緒に作ってみませんか？」と提案。</li>
+                <li><strong>10. 成功の定義を「学び」に拡大:</strong> 「PoCは実験であり、結果だけでなく『顧客がどう反応したか』という学びが、Marcomの次のクリエイティブな仕事の質を高める」と強調。</li>
+                <li><strong>11. 「顧客データ活用タスクフォース（仮）」の立ち上げ提案:</strong> Marcom Managerが主導し、CRMがサポートする形で、PoCデータ活用を検討する少人数のタスクフォースを提案。</li>
+                <li><strong>12. Noriさんの「Marcomへのコミットメント」を再宣言:</strong> 「Marcomさんが最前線で力を発揮できるよう、私はあらゆる支援を惜しみません。一緒にこの『顧客軸』という新たな地平を切り拓きましょう」と力強く伝える。</li>
+            </ul>
+        </section>
+
+        <section id="support-future" class="section-card">
+            <h2 class="text-2xl font-bold text-[#118AB2] mb-4 text-center">継続的な支援と未来の展望</h2>
+            <p class="mb-6 text-center text-gray-700">Marcom ManagerがCRM改革を「自分ごと」として捉え、積極的にコミットしてくれるよう、Noriさんからの継続的な支援と、将来の大きなビジョンを共有し続けます。</p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-[#06D6A0] mb-3">具体的な支援と伴走を約束</h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start hover-card p-2 rounded"><span class="text-xl mr-2 text-[#FF6B6B]">📊</span> <span><strong>PoCデータ連携支援:</strong> LINEスタンプカードで得られる顧客データ（誰がいつ、どこに）のMarcomへの提供を調整。</span></li>
+                        <li class="flex items-start hover-card p-2 rounded"><span class="text-xl mr-2 text-[#FF6B6B]">🎓</span> <span><strong>データ活用トレーニング:</strong> 限定的なデータでも効果を出すための分析視点や施策立案に関するトレーニングを提供。</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-[#06D6A0] mb-3">「壁打ち」相手としての役割</h3>
+                    <div class="flex flex-col items-center justify-center h-48 bg-gray-50 rounded-lg shadow hover-card">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-[#118AB2] text-white rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold">N</div>
+                            <span class="text-5xl text-[#FFD166]">↔️</span>
+                            <div class="bg-[#06D6A0] text-white rounded-full w-16 h-16 flex items-center justify-center text-3xl font-bold">M</div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-4 text-center">PoCデータに基づいたWeb/SNS施策立案の際に、Noriさんが共に思考し、課題解決をサポート。</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-[#06D6A0] mb-3 mt-8 text-center">経営層からの期待と連携を伝える</h3>
+            <p class="mb-6 text-center text-gray-700">Marcom ManagerのPoCでの成功が、全社的な顧客軸変革、特にCDP構築に向けた強力な推進力となることを明確に伝えます。</p>
+
+            <div class="bg-[#073B4C] text-white p-6 rounded-lg shadow-xl text-center hover-card">
+                <p class="text-lg font-semibold mb-3">「経営層も、CRM改革におけるMarcomの役割に大きな期待を寄せています。」</p>
+                <p class="text-sm font-light italic">― 経営層からのメッセージ</p>
+                <p class="text-xl font-bold mt-4">NoriさんのPoCでの成功が、全社変革の推進力に！</p>
+            </div>
+            <p class="text-sm text-gray-600 mt-6 text-center">必要であれば、経営層からのメッセージを直接伝える場を設けることも検討し、彼らの貢献が組織全体に与える影響を強調します。</p>
+        </section>
+    </main>
+
+    <button id="scrollToTopBtn" title="トップへ戻る">⬆️</button>
+
+    <footer class="text-center p-10 bg-gray-200 border-t border-gray-300">
+        <p class="text-[#073B4C] font-semibold text-lg">Marcom Managerとの共創で、CRM改革を成功へ導きましょう！</p>
+        <p class="text-xs text-gray-500 mt-2">このインフォグラフィックはMarcom ManagerのBuy-in促進のための具体的な留意点を示したものです。</p>
+    </footer>
+
+    <script>
+        const chartColors = {
+            primary: '#118AB2', // Energetic Blue
+            secondary: '#06D6A0', // Energetic Green
+            accent1: '#FFD166', // Energetic Yellow
+            accent2: '#FF6B6B', // Energetic Red
+            textDark: '#073B4C' // Dark Blue/Gunmetal
+        };
+
+        function wrapText(text, maxWidthChars = 10) {
+            if (typeof text !== 'string' || text.length <= maxWidthChars) {
+                return text;
+            }
+            const words = text.split('');
+            const lines = [];
+            let currentLine = '';
+            for (const char of words) {
+                if (currentLine.length >= maxWidthChars && char !== ' ') {
+                    lines.push(currentLine);
+                    currentLine = char;
+                } else {
+                    currentLine += char;
+                }
+            }
+            if (currentLine.length > 0) {
+                lines.push(currentLine);
+            }
+            return lines.length > 0 ? lines : [text];
+        }
+        
+        const tooltipTitleCallback = function(tooltipItems) {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join('');
+            } else {
+                return label;
+            }
+        };
+
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: chartColors.textDark,
+                        font: { size: 10 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: chartColors.textDark, font: { size: 10 } },
+                    grid: { color: 'rgba(7, 59, 76, 0.1)'}
+                },
+                x: {
+                    ticks: { color: chartColors.textDark, font: { size: 10 } },
+                    grid: { display: false }
+                }
+            }
+        };
+
+        // Marcom Effectiveness Chart (Bar Chart) - Updated for PoC specific metrics
+        const marcomEffectivenessCtx = document.getElementById('marcomEffectivenessChart')?.getContext('2d');
+        if (marcomEffectivenessCtx) {
+            new Chart(marcomEffectivenessCtx, {
+                type: 'bar',
+                data: {
+                    labels: [wrapText('Webサイトエンゲージメント率'), wrapText('SNS投稿リーチ精度'), wrapText('PR露出効果')],
+                    datasets: [{
+                        label: 'PoC前 (一般データ)',
+                        data: [50, 60, 40], // 仮の数値 (%)
+                        backgroundColor: chartColors.accent2,
+                        borderColor: chartColors.accent2,
+                        borderWidth: 1
+                    }, {
+                        label: 'PoC後 (データ活用後予測)',
+                        data: [70, 80, 70], // 仮の数値 (%) - 取得開始、チャネルシフトの兆候
+                        backgroundColor: chartColors.secondary,
+                        borderColor: chartColors.secondary,
+                        borderWidth: 1
+                    }]
+                },
+                options: commonChartOptions
+            });
+        }
+
+        // Data Integration Chart (Donut Chart) - Remains the same
+        const dataIntegrationCtx = document.getElementById('dataIntegrationChart')?.getContext('2d');
+        if (dataIntegrationCtx) {
+            new Chart(dataIntegrationCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: [wrapText('PoCで取得開始したデータ'), wrapText('今後のCDPで統合予定のデータ')],
+                    datasets: [{
+                        label: '顧客データ活用状況',
+                        data: [30, 70], // PoCで30%のデータが活用可能になったイメージ
+                        backgroundColor: [
+                            chartColors.primary,
+                            chartColors.accent1
+                        ],
+                        borderColor: [
+                            chartColors.primary,
+                            chartColors.accent1
+                        ],
+                        borderWidth: 1,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: chartColors.textDark, font: { size: 10 }, boxWidth: 15, padding:15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: tooltipTitleCallback
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let effortReductionChartInstance;
+        let currentEffortDataState = 0;
+
+        // Effort Reduction Chart (Bar Chart) - Remains the same
+        const effortReductionCtx = document.getElementById('effortReductionChart')?.getContext('2d');
+        if (effortReductionCtx) {
+            const initialData = {
+                labels: [wrapText('手作業工数'), wrapText('分析工数'), wrapText('戦略工数')],
+                datasets: [{
+                    label: '現状 (月間時間)',
+                    data: [40, 20, 10],
+                    backgroundColor: chartColors.accent2,
+                    borderColor: chartColors.accent2,
+                    borderWidth: 1
+                }, {
+                    label: 'CRM改革後 (月間時間)',
+                    data: [10, 30, 30],
+                    backgroundColor: chartColors.secondary,
+                    borderColor: chartColors.secondary,
+                    borderWidth: 1
+                }]
+            };
+
+            const alternativeData = {
+                labels: [wrapText('データ集計・レポート作成'), wrapText('キャンペーン企画・改善'), wrapText('顧客インサイト分析')],
+                datasets: [{
+                    label: 'CRM改革による時間配分変化 (時間)',
+                    data: [ -30, 20, 20],
+                    backgroundColor: [chartColors.accent2, chartColors.secondary, chartColors.secondary],
+                    borderColor: [chartColors.accent2, chartColors.secondary, chartColors.secondary],
+                    borderWidth: 1
+                }]
+            };
+
+            effortReductionChartInstance = new Chart(effortReductionCtx, {
+                type: 'bar',
+                data: initialData,
+                options: {
+                    ...commonChartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: chartColors.textDark, font: { size: 10 } },
+                            grid: { color: 'rgba(7, 59, 76, 0.1)'}
+                        },
+                        x: {
+                            ticks: { color: chartColors.textDark, font: { size: 10 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('toggleEffortChart')?.addEventListener('click', () => {
+                if (currentEffortDataState === 0) {
+                    effortReductionChartInstance.data = alternativeData;
+                    effortReductionChartInstance.options.scales.y.beginAtZero = false;
+                    currentEffortDataState = 1;
+                } else {
+                    effortReductionChartInstance.data = initialData;
+                    effortReductionChartInstance.options.scales.y.beginAtZero = true;
+                    currentEffortDataState = 0;
+                }
+                effortReductionChartInstance.update();
+            });
+        }
+
+        // Sticky Navigation Active State
+        const sections = document.querySelectorAll('main section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-50% 0px -50% 0px',
+            threshold: 0
+        };
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const id = entry.target.getAttribute('id');
+                const navLink = document.querySelector(`.nav-link[href="#${id}"]`);
+
+                if (navLink) {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        navLink.classList.add('active');
+                    }
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            sectionObserver.observe(section);
+        });
+
+        // Scroll to Top Button
+        const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+        window.onscroll = function() {
+            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+                scrollToTopBtn.style.display = "block";
+            } else {
+                scrollToTopBtn.style.display = "none";
+            }
+        };
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Case Study Toggle
+        document.querySelectorAll('.case-study-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const caseId = card.dataset.caseId;
+                const detailElement = document.getElementById(`case-${caseId}`);
+                if (detailElement) {
+                    detailElement.classList.toggle('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
